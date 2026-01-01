@@ -1,0 +1,5 @@
+{
+  "name": "TrelloLite Kanban",
+  "description": "A fully functional Kanban-style task management application with boards, lists, and drag-and-drop task management, featuring local storage persistence and a modern responsive UI.",
+  "requestFramePermissions": []
+}
