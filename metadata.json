@@ -1,5 +1,5 @@
 {
-  "name": "TrelloLite Kanban",
-  "description": "A fully functional Kanban-style task management application with boards, lists, and drag-and-drop task management, featuring local storage persistence and a modern responsive UI.",
+  "name": "TrelloLite Pro + AI",
+  "description": "Full-fludge Kanban Task Manager with Gemini-powered AI Assistant, drag-and-drop, and complete project management capabilities.",
   "requestFramePermissions": []
 }

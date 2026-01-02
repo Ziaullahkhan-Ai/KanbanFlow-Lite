@@ -13,7 +13,6 @@ export interface List {
   boardId: string;
   title: string;
   position: number;
-  tasks: Task[];
 }
 
 export interface Board {
@@ -25,10 +24,16 @@ export interface Board {
 
 export type ViewState = 'boards' | 'board-detail';
 
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+}
+
 export interface AppState {
   boards: Board[];
   lists: List[];
   tasks: Task[];
   activeBoardId: string | null;
   view: ViewState;
+  chatHistory: ChatMessage[];
 }
