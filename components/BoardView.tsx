@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
-import { Board, List, Task } from '../types';
-import { Plus, X, Trash2, LayoutList, MoreHorizontal, LayoutGrid } from 'lucide-react';
-import { TaskCard } from './TaskCard';
-import { CreateTaskModal } from './Modals';
+import { Board, List, Task } from '../types.ts';
+import { Plus, X, Trash2, LayoutGrid, MoreHorizontal } from 'lucide-react';
+import { TaskCard } from './TaskCard.tsx';
+import { CreateTaskModal } from './Modals.tsx';
 
 interface BoardViewProps {
   board: Board;
@@ -36,7 +35,9 @@ export const BoardView: React.FC<BoardViewProps> = ({
 
   const handleDragOver = (e: React.DragEvent, listId: string) => {
     e.preventDefault();
-    setDragTargetList(listId);
+    if (dragTargetList !== listId) {
+      setDragTargetList(listId);
+    }
   };
 
   const handleDrop = (e: React.DragEvent, listId: string) => {
@@ -49,55 +50,55 @@ export const BoardView: React.FC<BoardViewProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-300">
-      <div className="px-8 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border-b border-slate-200">
+    <div className="h-full flex flex-col overflow-hidden animate-in fade-in duration-300 bg-slate-100">
+      <div className="px-8 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border-b border-slate-200">
         <div className="flex items-center gap-4">
-          <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl">
-            <LayoutGrid className="w-6 h-6" />
+          <div className="p-3 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-100">
+            <LayoutGrid className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-2xl font-black text-slate-900 tracking-tight">{board.title}</h2>
-            <p className="text-sm text-slate-500 font-medium">{board.description || 'Organize your work visually.'}</p>
+            <h2 className="text-xl font-bold text-slate-900 leading-tight">{board.title}</h2>
+            <p className="text-xs text-slate-500 font-medium">{board.description || 'Workspace'}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <div className="hidden md:flex -space-x-2">
             {[1, 2, 3].map(i => (
-              <img key={i} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${i}`} className="w-9 h-9 rounded-full border-2 border-white shadow-sm" />
+              <img key={i} src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${i + (board.id.length % 10)}`} className="w-8 h-8 rounded-full border-2 border-white shadow-sm" />
             ))}
           </div>
-          <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors">
+          <button className="p-2 text-slate-400 hover:bg-slate-100 rounded-lg transition-colors">
             <MoreHorizontal className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-x-auto p-8 flex items-start gap-8 bg-slate-50/50 custom-scrollbar">
+      <div className="flex-1 overflow-x-auto p-8 flex items-start gap-6 custom-scrollbar">
         {lists.sort((a, b) => a.position - b.position).map(list => (
           <div 
             key={list.id} 
-            className="flex-shrink-0 w-[320px] flex flex-col max-h-full"
+            className="flex-shrink-0 w-[300px] flex flex-col max-h-full"
             onDragOver={(e) => handleDragOver(e, list.id)}
             onDragLeave={() => setDragTargetList(null)}
             onDrop={(e) => handleDrop(e, list.id)}
           >
-            <div className="flex items-center justify-between mb-5 px-1">
-              <div className="flex items-center gap-3">
-                <h3 className="font-extrabold text-slate-800 tracking-tight text-sm uppercase">{list.title}</h3>
-                <span className="text-[10px] bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full font-black shadow-sm">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-slate-700 text-sm tracking-tight">{list.title}</h3>
+                <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-bold">
                   {tasks.filter(t => t.listId === list.id).length}
                 </span>
               </div>
               <button 
-                onClick={() => confirm('Delete list?') && onDeleteList(list.id)}
-                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                onClick={() => confirm('Delete this list and all its tasks?') && onDeleteList(list.id)}
+                className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-white rounded-lg transition-all"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
 
-            <div className={`flex-1 overflow-y-auto flex flex-col gap-4 min-h-[150px] p-2 rounded-2xl transition-all ${
-              dragTargetList === list.id ? 'bg-indigo-50 border-2 border-indigo-200 border-dashed' : 'bg-transparent'
+            <div className={`flex-1 overflow-y-auto flex flex-col gap-3 min-h-[100px] p-2 rounded-xl transition-all duration-200 ${
+              dragTargetList === list.id ? 'bg-indigo-50/50 ring-2 ring-indigo-200 ring-dashed' : 'bg-slate-200/30'
             }`}>
               {tasks
                 .filter(t => t.listId === list.id)
@@ -110,47 +111,41 @@ export const BoardView: React.FC<BoardViewProps> = ({
                     onUpdate={(updates) => onUpdateTask(task.id, updates)}
                   />
                 ))}
-              
-              {tasks.filter(t => t.listId === list.id).length === 0 && !dragTargetList && (
-                <div className="flex flex-col items-center justify-center py-10 text-slate-300 border border-dashed border-slate-200 rounded-2xl">
-                  <span className="text-[10px] font-bold uppercase tracking-widest italic opacity-50">Drop here</span>
-                </div>
-              )}
             </div>
 
             <button 
               onClick={() => setActiveListForTask(list.id)}
-              className="mt-4 flex items-center justify-center gap-2 py-3 w-full bg-white text-slate-500 hover:text-indigo-600 hover:border-indigo-200 rounded-2xl text-xs font-black transition-all border border-slate-100 shadow-sm group"
+              className="mt-4 flex items-center justify-center gap-2 py-2.5 w-full bg-white text-slate-500 hover:text-indigo-600 hover:border-indigo-200 rounded-xl text-xs font-bold transition-all border border-slate-200 shadow-sm"
             >
-              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-              ADD NEW TASK
+              <Plus className="w-4 h-4" />
+              ADD TASK
             </button>
           </div>
         ))}
 
-        <div className="flex-shrink-0 w-[320px]">
+        <div className="flex-shrink-0 w-[300px]">
           {isAddingList ? (
-            <form onSubmit={handleAddList} className="bg-white p-5 rounded-3xl border border-slate-200 shadow-2xl animate-in zoom-in-95">
+            <form onSubmit={handleAddList} className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xl animate-in zoom-in-95">
               <input 
                 autoFocus
                 type="text"
                 value={newListTitle}
                 onChange={(e) => setNewListTitle(e.target.value)}
-                placeholder="List title (e.g. Backlog)"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none mb-3 text-sm font-bold"
+                placeholder="List title..."
+                className="w-full px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl outline-none mb-3 text-sm font-bold"
               />
               <div className="flex gap-2">
-                <button type="submit" className="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl text-xs font-bold hover:bg-indigo-700">CREATE</button>
-                <button type="button" onClick={() => setIsAddingList(false)} className="p-2.5 text-slate-400 hover:bg-slate-100 rounded-xl"><X className="w-5 h-5" /></button>
+                <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 rounded-xl text-xs font-bold hover:bg-indigo-700">CREATE</button>
+                <button type="button" onClick={() => setIsAddingList(false)} className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl"><X className="w-5 h-5" /></button>
               </div>
             </form>
           ) : (
             <button 
               onClick={() => setIsAddingList(true)}
-              className="w-full bg-slate-200/40 hover:bg-slate-200/60 text-slate-500 p-5 rounded-3xl flex items-center justify-center gap-2 border border-slate-300 border-dashed transition-all active:scale-95 group"
+              className="w-full bg-slate-200/50 hover:bg-slate-200 text-slate-500 p-4 rounded-2xl flex items-center justify-center gap-2 border border-slate-300 border-dashed transition-all"
             >
-              <Plus className="w-5 h-5 group-hover:scale-125 transition-transform" />
-              <span className="font-black text-xs uppercase tracking-widest">New List</span>
+              <Plus className="w-5 h-5" />
+              <span className="font-bold text-xs tracking-wider">NEW LIST</span>
             </button>
           )}
         </div>

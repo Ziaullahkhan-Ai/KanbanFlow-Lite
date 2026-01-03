@@ -1,18 +1,17 @@
-
 import React, { useState } from 'react';
-import { useAppStore } from './store';
-import { Header } from './components/Header';
-import { BoardList } from './components/BoardList';
-import { BoardView } from './components/BoardView';
-import { CreateBoardModal } from './components/Modals';
-import { ChatBot } from './components/ChatBot';
+import { useAppStore } from './store.ts';
+import { Header } from './components/Header.tsx';
+import { BoardList } from './components/BoardList.tsx';
+import { BoardView } from './components/BoardView.tsx';
+import { CreateBoardModal } from './components/Modals.tsx';
+import { ChatBot } from './components/ChatBot.tsx';
 
 const App: React.FC = () => {
   const store = useAppStore();
   const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="h-screen flex flex-col bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden">
       <Header 
         onHome={() => store.setView('boards')} 
         onAddBoard={() => setIsCreateBoardOpen(true)} 
@@ -20,11 +19,13 @@ const App: React.FC = () => {
       
       <main className="flex-1 overflow-hidden relative">
         {store.view === 'boards' ? (
-          <BoardList 
-            boards={store.boards} 
-            onSelectBoard={(id) => store.setView('board-detail', id)}
-            onDeleteBoard={store.deleteBoard}
-          />
+          <div className="h-full overflow-y-auto custom-scrollbar">
+            <BoardList 
+              boards={store.boards} 
+              onSelectBoard={(id) => store.setView('board-detail', id)}
+              onDeleteBoard={store.deleteBoard}
+            />
+          </div>
         ) : (
           <BoardView 
             board={store.boards.find(b => b.id === store.activeBoardId)!}
@@ -39,7 +40,6 @@ const App: React.FC = () => {
           />
         )}
         
-        {/* Chatbot is always available */}
         <ChatBot store={store} />
       </main>
 
