@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { useAppStore } from './store';
-import { Header } from './components/Header';
-import { BoardList } from './components/BoardList';
-import { BoardView } from './components/BoardView';
-import { CreateBoardModal } from './components/Modals';
-import { ChatBot } from './components/ChatBot';
+import { useAppStore } from './store.ts';
+import { Header } from './components/Header.tsx';
+import { BoardList } from './components/BoardList.tsx';
+import { BoardView } from './components/BoardView.tsx';
+import { CreateBoardModal } from './components/Modals.tsx';
+import { ChatBot } from './components/ChatBot.tsx';
 
 const App: React.FC = () => {
   const store = useAppStore();
   const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
 
-  // Return a safe fragment if state isn't ready
-  if (!store) return <div className="p-10 text-center">Loading Store...</div>;
+  if (!store) return null;
 
   return (
     <div className="h-screen flex flex-col bg-slate-50 selection:bg-indigo-100 selection:text-indigo-900 overflow-hidden">
@@ -22,7 +21,7 @@ const App: React.FC = () => {
       
       <main className="flex-1 overflow-hidden relative">
         {store.view === 'boards' ? (
-          <div className="h-full overflow-y-auto custom-scrollbar">
+          <div className="h-full overflow-y-auto">
             <BoardList 
               boards={store.boards} 
               onSelectBoard={(id) => store.setView('board-detail', id)}
