@@ -2,32 +2,36 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Board, List, Task, AppState, ViewState, ChatMessage } from './types';
 
-const STORAGE_KEY = 'trellolite_data_v2';
+const STORAGE_KEY = 'trellolite_v3_data';
 
 const initialData: AppState = {
   boards: [
-    { id: 'b1', title: '🚀 Launch Project', description: 'Everything needed for the big launch.', createdAt: new Date().toISOString() }
+    { id: 'welcome-board', title: '🚀 Get Started', description: 'Your first board to help you organize.', createdAt: new Date().toISOString() }
   ],
   lists: [
-    { id: 'l1', boardId: 'b1', title: 'To Do', position: 0 },
-    { id: 'l2', boardId: 'b1', title: 'In Progress', position: 1 },
-    { id: 'l3', boardId: 'b1', title: 'Done', position: 2 }
+    { id: 'list-todo', boardId: 'welcome-board', title: 'To Do', position: 0 },
+    { id: 'list-doing', boardId: 'welcome-board', title: 'Doing', position: 1 },
+    { id: 'list-done', boardId: 'welcome-board', title: 'Done', position: 2 }
   ],
   tasks: [
-    { id: 't1', listId: 'l1', title: 'Design landing page', description: 'Create high-fidelity mockups for the home page.', position: 0, createdAt: new Date().toISOString() },
-    { id: 't2', listId: 'l1', title: 'API Integration', description: 'Connect the frontend to the backend services.', position: 1, createdAt: new Date().toISOString() }
+    { id: 'task-1', listId: 'list-todo', title: 'Try dragging me!', description: 'Move me to the Doing list.', position: 0, createdAt: new Date().toISOString() },
+    { id: 'task-2', listId: 'list-todo', title: 'Ask the AI', description: 'Click the chat bubble in the bottom right.', position: 1, createdAt: new Date().toISOString() }
   ],
   activeBoardId: null,
   view: 'boards',
   chatHistory: [
-    { role: 'model', content: 'Hello! I am your TrelloLite assistant. I can help you organize your boards, suggest tasks, or even create them for you. How can I help today?' }
+    { role: 'model', content: "Hi! I'm your TrelloLite AI assistant. I can help you organize your workflow, suggest task descriptions, or even create tasks for you directly. How can I assist today?" }
   ]
 };
 
 export function useAppStore() {
   const [state, setState] = useState<AppState>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : initialData;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : initialData;
+    } catch {
+      return initialData;
+    }
   });
 
   useEffect(() => {
@@ -39,16 +43,16 @@ export function useAppStore() {
   }, []);
 
   const addBoard = useCallback((title: string, description: string) => {
-    const id = Math.random().toString(36).substr(2, 9);
+    const id = `b-${Date.now()}`;
     const newBoard: Board = { id, title, description, createdAt: new Date().toISOString() };
     const defaultLists: List[] = [
       { id: `l-${id}-1`, boardId: id, title: 'To Do', position: 0 },
-      { id: `l-${id}-2`, boardId: id, title: 'Doing', position: 1 },
+      { id: `l-${id}-2`, boardId: id, title: 'In Progress', position: 1 },
       { id: `l-${id}-3`, boardId: id, title: 'Done', position: 2 }
     ];
     setState(prev => ({
       ...prev,
-      boards: [...prev.boards, newBoard],
+      boards: [newBoard, ...prev.boards],
       lists: [...prev.lists, ...defaultLists]
     }));
     return id;
@@ -59,7 +63,10 @@ export function useAppStore() {
       ...prev,
       boards: prev.boards.filter(b => b.id !== id),
       lists: prev.lists.filter(l => l.boardId !== id),
-      tasks: prev.tasks.filter(t => !prev.lists.find(l => l.id === t.listId && l.boardId === id)),
+      tasks: prev.tasks.filter(t => {
+        const list = prev.lists.find(l => l.id === t.listId);
+        return list && list.boardId !== id;
+      }),
       view: prev.activeBoardId === id ? 'boards' : prev.view,
       activeBoardId: prev.activeBoardId === id ? null : prev.activeBoardId
     }));
@@ -67,7 +74,7 @@ export function useAppStore() {
 
   const addList = useCallback((boardId: string, title: string) => {
     const newList: List = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: `l-${Date.now()}`,
       boardId,
       title,
       position: state.lists.filter(l => l.boardId === boardId).length
@@ -85,7 +92,7 @@ export function useAppStore() {
 
   const addTask = useCallback((listId: string, title: string, description: string) => {
     const newTask: Task = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: `t-${Date.now()}`,
       listId,
       title,
       description,
@@ -103,14 +110,15 @@ export function useAppStore() {
     }));
   }, []);
 
-  const moveTask = useCallback((taskId: string, targetListId: string, newPosition: number) => {
+  const moveTask = useCallback((taskId: string, targetListId: string) => {
     setState(prev => {
-      const otherTasks = prev.tasks.filter(t => t.id !== taskId);
-      const taskToMove = prev.tasks.find(t => t.id === taskId);
-      if (!taskToMove) return prev;
-
-      const updatedTask = { ...taskToMove, listId: targetListId, position: newPosition };
-      return { ...prev, tasks: [...otherTasks, updatedTask] };
+      const task = prev.tasks.find(t => t.id === taskId);
+      if (!task) return prev;
+      
+      return {
+        ...prev,
+        tasks: prev.tasks.map(t => t.id === taskId ? { ...t, listId: targetListId } : t)
+      };
     });
   }, []);
 
@@ -121,7 +129,7 @@ export function useAppStore() {
   const addChatMessage = useCallback((message: ChatMessage) => {
     setState(prev => ({
       ...prev,
-      chatHistory: [...prev.chatHistory, message].slice(-50) // Keep last 50
+      chatHistory: [...prev.chatHistory, message].slice(-50)
     }));
   }, []);
 
