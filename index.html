@@ -45,15 +45,32 @@
 <script type="importmap">
 {
   "imports": {
-    "react": "https://esm.sh/react@19.0.0?bundle",
-    "react-dom": "https://esm.sh/react-dom@19.0.0?bundle",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client?bundle",
+    "react": "https://esm.sh/react@19.0.0",
+    "react-dom": "https://esm.sh/react-dom@19.0.0",
+    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
     "lucide-react": "https://esm.sh/lucide-react@0.475.0?external=react",
     "@google/genai": "https://esm.sh/@google/genai@0.21.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react/": "https://esm.sh/react@^19.2.3/"
   }
 }
+</script>
+<script>
+  // Global error handler to catch module load failures
+  window.onerror = function(msg, url, line, col, error) {
+    const loader = document.getElementById('loading-screen');
+    if (loader) {
+      loader.style.opacity = '1';
+      loader.innerHTML = `
+        <div class="text-center p-8">
+          <h1 class="text-red-600 font-bold text-xl mb-2">Startup Error</h1>
+          <p class="text-slate-500 text-sm mb-4">${msg}</p>
+          <button onclick="location.reload()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Retry</button>
+        </div>
+      `;
+    }
+    return false;
+  };
 </script>
 </head>
 <body>
@@ -66,7 +83,7 @@
             </div>
         </div>
     </div>
-    <div id="root" class="h-screen"></div>
+    <div id="root" class="h-screen w-full"></div>
     <script type="module" src="index.tsx"></script>
 </body>
 </html>
