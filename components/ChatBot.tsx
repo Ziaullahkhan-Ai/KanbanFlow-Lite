@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { GoogleGenAI, Type, FunctionDeclaration } from '@google/genai';
-import { MessageSquare, Send, X, Bot, Loader2, Sparkles, Trash2, Zap } from 'lucide-react';
+import { MessageSquare, Send, X, Bot, Loader2, Sparkles, Trash2 } from 'lucide-react';
 
 interface ChatBotProps {
   store: any;
@@ -23,7 +22,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ store }) => {
     name: 'create_task',
     parameters: {
       type: Type.OBJECT,
-      description: 'Creates a new task in a specified list. Useful when user says "Add a task to To Do list called Fix Bugs"',
+      description: 'Creates a new task in a specified list.',
       properties: {
         listId: { type: Type.STRING, description: 'The exact ID of the list.' },
         title: { type: Type.STRING, description: 'The title of the task.' },
@@ -43,7 +42,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ store }) => {
     setIsLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
       
       const activeLists = store.activeBoardId 
         ? store.lists.filter((l: any) => l.boardId === store.activeBoardId) 
@@ -62,7 +61,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ store }) => {
           { role: 'user', parts: [{ text: `${context}\n\nUser Question: ${userMessage}` }] }
         ],
         config: {
-          systemInstruction: "You are a smart Project Manager Assistant for TrelloLite. You are proactive and helpful. You can use the create_task tool to actually add tasks to the board. If the user doesn't specify which list, ask them. If no board is active, tell them to open a board first. Use Markdown for formatting.",
+          systemInstruction: "You are a smart Project Manager Assistant for TrelloLite. Use Markdown for formatting.",
           tools: [{ functionDeclarations: [createTaskTool] }],
         },
       });
@@ -78,7 +77,7 @@ export const ChatBot: React.FC<ChatBotProps> = ({ store }) => {
       }
     } catch (error) {
       console.error(error);
-      store.addChatMessage({ role: 'model', content: "Oops! I hit a snag connecting to the brain. Check your connection or API key." });
+      store.addChatMessage({ role: 'model', content: "Oops! I hit a snag. Please check your API key." });
     } finally {
       setIsLoading(false);
     }

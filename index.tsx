@@ -12,7 +12,7 @@ if (container) {
     </React.StrictMode>
   );
 
-  // Hide loader
+  // Hide loader once the script executes
   const loader = document.getElementById('loading-screen');
   if (loader) {
     loader.style.display = 'none';
