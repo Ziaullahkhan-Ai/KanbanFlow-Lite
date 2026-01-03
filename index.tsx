@@ -12,9 +12,12 @@ if (container) {
     </React.StrictMode>
   );
 
-  // Hide loader once the script executes
+  // Safely remove the loading screen once React takes over
   const loader = document.getElementById('loading-screen');
   if (loader) {
-    loader.style.display = 'none';
+    setTimeout(() => {
+      loader.style.opacity = '0';
+      setTimeout(() => loader.remove(), 500);
+    }, 200);
   }
 }
